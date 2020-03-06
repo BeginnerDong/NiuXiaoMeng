@@ -1,0 +1,38 @@
+
+/* 详情页内容 */
+.detailxqBan{ width: 100%;height: 500rpx; display: block;}
+.detailxqBan image{ width: 100%; height: 100%; display: block;}
+
+.detailHead .tit{font-size: 30rpx;padding: 24rpx 0;font-weight: bold;}
+.detailHead .data{font-size: 26rpx;color: #ff9126;padding: 20rpx 0 10rpx 0;}
+.detailHead .sellNum{font-size: 26rpx; color: #666;}
+.detailHead .B-price{padding-top: 24rpx;}
+
+.xqInfor .cont image{max-width: 100% !important; display: block;margin:20rpx auto;}
+.xqInfor .cont view{padding-bottom: 10rpx;}
+
+/* 评价 */
+
+.detail_pjLis .item{padding: 30rpx 0;border-bottom: 2rpx solid #e1e1e1; display: flex; justify-content: space-between;}
+.detail_pjLis .photo{ width: 60rpx; height: 60rpx;border-radius: 50%;overflow: hidden;}
+.detail_pjLis .photo image{width: 100%;height: 100%;}
+.detail_pjLis .cont{ width: 614rpx;}
+.detail_pjLis .picLis .pic{width: 190rpx;height: 190rpx;margin:20rpx 20rpx 0 0;border-radius: 10rpx;}
+.detail_pjLis .picLis .pic image{width: 100%;height: 100%;}
+.detail_pjLis .picLis .pic:nth-of-type(3n){margin-right: 0;}
+
+
+
+/* 详情页底部菜单 */
+
+.xqbotomBar{width: 100%;height: 100rpx;background: #fff;box-shadow: 0 -4rpx 10rpx rgba(0, 0, 0, 0.1);display: flex;justify-content: space-between;align-items: center;position: fixed;bottom: 0;left: 0;right: 0; z-index:40;box-sizing: border-box;}
+.xqbotomBar .left {width: 50%;display: flex;justify-content: space-between;align-items: center;box-sizing: border-box;}
+.xqbotomBar .left .ite{width: 33.33%;text-align: center;font-size: 24rpx;color: #666;line-height: 26rpx;}
+.xqbotomBar .left .ite image{width: 36rpx;height: 36rpx;display: block;margin: 0 auto 8rpx auto;}
+.xqbotomBar .right{width: 50%;line-height: 100rpx;text-align: center;}
+.xqbotomBar .right .item{width: 50%;}
+.xqbotomBar .radiuBtn{width: 160rpx;height: 68rpx;line-height: 66rpx;border-radius: 40rpx;border:1px solid #E1211C;text-align: center;box-sizing: border-box;}
+.xqbotomBar .payBtn{width: 260rpx;line-height: 100rpx;text-align: center;background-color: #E1211C;color: #fff;}
+
+
+

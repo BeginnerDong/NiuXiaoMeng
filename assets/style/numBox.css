@@ -1,0 +1,9 @@
+
+/* 数量加减 */
+.numBox{}
+.numBox view{ height: 48rpx;text-align: center; line-height: 48rpx;}
+.numBox view.num{ width: 80rpx;font-size: 32rpx;}
+.numBox .btn{width: 48rpx;color: #e1211c;font-size:44rpx;line-height: 44rpx; border: 1px solid #E1211C;border-radius: 50%;  }
+.numBox .btn.add{background-color: #E1211C;color: #fff;}
+	
+	

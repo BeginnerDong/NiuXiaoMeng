@@ -1,0 +1,18 @@
+
+/* 列表 */
+.proList .item{padding:20rpx 20rpx 30rpx 20rpx;box-sizing: border-box;margin-top: 30rpx;border-radius: 10rpx;background: #fff;}
+.proList .item .pic{width: 100%;height: 340rpx;box-sizing: border-box;border-radius: 10rpx;overflow: hidden;}
+.proList .item .pic image{width: 100%;height: 100%;box-sizing: border-box;}
+.proList .item .tit{font-size: 30rpx;padding: 24rpx 0;font-weight: bold;}
+.proList .item .data{font-size: 26rpx;color: #ff9126;padding: 20rpx 0 10rpx 0;}
+.proList .item .sellNum{font-size: 26rpx; color: #666;}
+.proList .item .B-price{padding-top: 24rpx;}
+
+.proList .item .B-price .robBtn{width: 200rpx;height: 60rpx;line-height: 60rpx;text-align: center;border-radius: 36rpx;color: #fff;background-color: #e0e0e0;font-size: 26rpx;}
+.proList .item .B-price .robBtn.rob{background-color: #ff5f5b;}
+.proList .item .B-price .robBtn.addCar{background-color: #E1211C;}
+
+
+
+
+
