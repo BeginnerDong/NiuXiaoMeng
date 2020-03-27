@@ -9,7 +9,7 @@
 				</view>
 				<view class="delt flex"><text>×</text></view>
 			</view>
-			<view class="fs15 pubColor" @click="Router.redirectTo({route:{path:'/pages/seachProduct/seachProduct'}})">搜索</view>
+			<view class="fs15 pubColor" @click="search">搜索</view>
 		</view>
 		
 		<view class="pdlr4">
@@ -19,7 +19,7 @@
 			</view>
 		</view>
 		
-		<view class="fx-deltBtn flexCenter color6" @click="popupShow">
+		<view class="fx-deltBtn flexCenter color6" @click="popupShow" v-if="self.historyDate&&self.historyDate.length>0">
 			<image class="icon" src="../../static/images/delt-icon1.png" mode=""></image>
 			<text>清除搜索记录</text>
 		</view>
@@ -46,7 +46,7 @@
 				wx_info:{},
 				is_show:false,
 				mainData:[],
-				historyDate:['樱桃','苹果','橙子'],
+				historyDate:[],
 				is_popupShow:false,
 				keywords:''
 			}
@@ -60,7 +60,7 @@
 			};
 			console.log(self.historyDate)
 			self.paginate = self.$Utils.cloneForm(self.$AssetsConfig.paginate);
-			self.$Utils.loadAll(['getMainData'], self);
+			//self.$Utils.loadAll(['getMainData'], self);
 		},
 		
 		
@@ -98,33 +98,7 @@
 				self.is_show = !self.is_show;
 			},
 			
-			getMainData(isNew) {
-				const self = this;
-				if (isNew) {
-					self.mainData = [];
-					self.paginate = {
-						count: 0,
-						currentPage: 1,
-						is_page: true,
-						pagesize: 10
-					}
-				};
-				const postData = {};
-				postData.paginate = self.$Utils.cloneForm(self.paginate);
-				postData.searchItem = {
-					thirdapp_id:2
-				};
-				postData.order = {
-					count:'desc'
-				};
-				const callback = (res) => {
-					if (res.info.data.length > 0) {
-						self.mainData.push.apply(self.mainData,res.info.data)
-					}
-					self.$Utils.finishFunc('getMainData');
-				};
-				self.$apis.hotSearchGet(postData, callback);
-			},
+			
 			
 		}
 	};
@@ -148,5 +122,20 @@
 	.popupShow{ width: 80%;position: fixed; top: 50%;left: 50%;transform: translate(-50%,-50%); z-index: 50;box-sizing: border-box;}
 	.tip-button .item{width: 50%;box-sizing: border-box; line-height: 100rpx;}
 	.tip-button .item:first-child{border-right:1px solid #eee;}
+	button{
+		background: none;
+		line-height: 1.5;
+		margin-left: 0;
+		margin-right: 0;
+		font-size: 16px;
+		border-radius: 0;
+	}
+	button::after{
+		border: none;
+	}
+	.button-hover {
+		color: #000000;
+		background: none;
+	}
 </style>
 

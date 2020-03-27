@@ -5,27 +5,28 @@
 			<view class="myOrderList fs12">
 				<view class="item">
 					<view class="flexRowBetween stateLine pdtb15 borderB1">
-						<view>订单编号：15558755542525</view>
+						<view>订单编号：{{mainData.order_no?mainData.order_no:''}}</view>
 						<view class="pubColor flexEnd">已提货</view>
 					</view>
 					<view class="flexRowBetween pdtb10 inforLine borderB1">
 						<view class="picBox">
-							<image src="../../static/images/evaluation-img.png" mode=""></image>
+							<image :src="mainData.orderItem&&mainData.orderItem[0]&&mainData.orderItem[0].snap_product
+							&&mainData.orderItem[0].snap_product.mainImg&&mainData.orderItem[0].snap_product.mainImg[0]?mainData.orderItem[0].snap_product.mainImg[0].url:''" mode=""></image>
 						</view>
-						<view class="rr flexEnd">
+						<!-- <view class="rr flexEnd">
 							<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image>
-						</view>
+						</view> -->
 					</view>
 					<view class="flexRowBetween pdtb10">
-						<view class="color9 fs13">2020.03.04 14:30:20</view>
-						<view class="flexEnd">共1件商品 合计:<span class="fs14">￥56</span></view>
+						<view class="color9 fs13">{{mainData.create_time?mainData.create_time:''}}</view>
+						<view class="flexEnd">共{{mainData.count?mainData.count:''}}件商品 合计:<span class="fs14">￥{{mainData.price?mainData.price:''}}</span></view>
 					</view>
 				</view>
 			</view>
 			
 			<view class="whiteBj radius10 pdlr4 pdt15 pdb15 mgt15">
 				<view class="fs13">
-					<textarea value="" placeholder="商品满足您的期望吗？分享你的使用心得" />
+					<textarea v-model="submitData.description" placeholder="商品满足您的期望吗？分享你的使用心得" />
 				</view>
 				<view class="flex">
 					<view class="flex onloadbtn">
@@ -33,18 +34,13 @@
 					</view>
 				</view>
 				<view class="flex pjPic">
-					<image src="../../static/images/evaluation-img1.png" mode=""></image>
-					<image src="../../static/images/evaluation-img1.png" mode=""></image>
-					<image src="../../static/images/evaluation-img1.png" mode=""></image>
+					<image v-for="item in submitData.bannerImg" :src="item.url" mode=""></image>
 				</view>
-					
-				
-				
 			</view>
 		</view>
 		
 		<view class="submitbtn" style="margin-top: 120rpx;">
-			<button class="btn" type="button" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">发表评论</button>
+			<button class="btn" type="button" @click="Utils.stopMultiClick(submit)">发表评论</button>
 		</view>
 		
 	</view>
@@ -55,16 +51,121 @@
 		data() {
 			return {
 				Router:this.$Router,
-				showView: false,
-				score:'',
-				wx_info:{}
+				Utils:this.$Utils,
+				mainData:{},
+				submitData: {
+					order_no: '',
+					product_no: '',
+					bannerImg:[],
+					description: '',
+					type:1,
+					title:'',
+					mainImg:[],
+					passage1:'',
+					thirdapp_id:2
+				},
 			}
 		},
-		onLoad() {
+		
+		onLoad(options) {
 			const self = this;
-			//self.$Utils.loadAll(['getMainData'], self);
+			self.id = options.id;
+			var res = self.$Token.getProjectToken(function(){
+				self.$Utils.loadAll(['getMainData'], self)
+			});
+			if(res){
+				self.$Utils.loadAll(['getMainData'], self)
+			};
+			self.submitData.mainImg = [{type:'image',url:uni.getStorageSync('user_info').headImgUrl}];
+			self.submitData.title = uni.getStorageSync('user_info').nickname
 		},
+		
 		methods: {
+			
+			getMainData() {
+				const self = this;
+				const postData = {};
+				postData.tokenFuncName = 'getProjectToken';
+				postData.searchItem = {
+					id: self.id,
+				};
+				postData.getAfter = {
+					orderItem:{
+						tableName:'OrderItem',
+						middleKey:'order_no',
+						key:'order_no',
+						searchItem:{
+							status:1
+						},
+						condition:'=',
+						
+					}
+				};
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.mainData = res.info.data[0];
+						self.submitData.order_no = self.mainData.order_no;
+						self.submitData.passage1 = self.mainData.parent_no;
+						self.submitData.product_no = self.mainData.orderItem[0].snap_product.product_no
+					};
+					console.log('self.mainData', self.mainData)
+					self.$Utils.finishFunc('getMainData');
+				};
+				self.$apis.orderGet(postData, callback);
+			},
+			
+			submit() {
+				const self = this;
+				uni.setStorageSync('canClick', false);
+				var newObject = self.$Utils.cloneForm(self.submitData);
+				delete newObject.bannerImg
+				const pass = self.$Utils.checkComplete(newObject);
+				console.log('pass', pass);
+				console.log('self.submitData', self.submitData)
+				if (pass) {
+					self.messageAdd();
+				} else {
+					uni.setStorageSync('canClick', true);
+					self.$Utils.showToast('请补全信息', 'none')
+				};
+			},
+			
+			messageAdd() {
+				const self = this;
+				const postData = {};
+				postData.tokenFuncName = 'getProjectToken';
+				
+				postData.data = {};
+				postData.data = self.$Utils.cloneForm(self.submitData);
+				postData.saveAfter = [{
+				  tableName:'Order',
+				  FuncName:'update',
+				  searchItem:{
+				    id:self.id
+				  },
+				  data:{
+				    isremark:1,
+				  }
+				}];
+				const callback = (data) => {
+			
+					if (data.solely_code == 100000) {
+			
+						self.$Utils.showToast('评价成功', 'none')
+						setTimeout(function() {
+							uni.navigateBack({
+								delta: 1
+							})
+						}, 1000);
+					} else {
+						uni.setStorageSync('canClick', true);
+						self.$Utils.showToast(data.msg, 'none', 1000)
+					}
+			
+				};
+				self.$apis.messageAdd(postData, callback);
+			},
+			
 		}
 	};
 </script>

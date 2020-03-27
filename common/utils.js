@@ -1,78 +1,145 @@
 import assetsConfig from "@/config/assets.config.js";
-
+import token from '@/common/token.js';
 export default {
-	
-	
+
+
 
 	realPay(param, callback) {
-	
-		function onBridgeReady(param) {
-			WeixinJSBridge.invoke(
-				'getBrandWCPayRequest', {
-					"appId": "wx7db54ed176405e24", //公众号名称，由商户传入     
-					'timeStamp': param.timeStamp,
-					'nonceStr': param.nonceStr,
-					'package': param.package,
-					'signType': param.signType,
-					'paySign': param.paySign,
-				},
-				function(res) {
-	
-					if (res.err_msg == "get_brand_wcpay_request:ok") {
-						// 使用以上方式判断前端返回,微信团队郑重提示：
-						//res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-						callback && callback(1);
-					} else {
-/* 						alert(JSON.stringify(res));
-						alert(res.err_msg); */
-						callback && callback(0);
-					}
+		uni.requestPayment({
+			provider: 'wxpay',
+			'timeStamp': param.timeStamp,
+			'nonceStr': param.nonceStr,
+			'package': param.package,
+			'signType': param.signType,
+			'paySign': param.paySign,
+			success: function(res) {
+				console.log(res);
+				wx.showToast({
+					title: '支付成功',
+					icon: 'none',
+					duration: 1000,
+					mask: true
 				});
-		}
-		if (typeof WeixinJSBridge == "undefined") {
-			if (document.addEventListener) {
-				document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
-			} else if (document.attachEvent) {
-				document.attachEvent('WeixinJSBridgeReady', onBridgeReady);
-				document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
-			}
-		} else {
-			onBridgeReady(param);
-		}
 	
+				callback && callback(1);
+			},
+			fail: function(res) {
+				console.log(res);
+				wx.showToast({
+					title: '支付失败',
+					icon: 'none',
+					duration: 1000,
+					mask: true
+				});
+				callback && callback(0);
+			}
+		});
+	},
+
+	getAuthSetting(callback) {
+		wx.getSetting({
+			success: setting => {
+				if (!setting.authSetting['scope.userInfo']) {
+					wx.hideLoading();
+					uni.setStorageSync('canClick', true);
+					this.showToast('授权请点击同意', 'none');
+				} else {
+					uni.getUserInfo({
+						provider: 'weixin',
+						success: function(infoRes) {
+							console.log('-------获取微信用户所有-----');
+							console.log(JSON.stringify(infoRes.userInfo));
+							callback && callback(infoRes.userInfo, setting);
+						}
+					});
+
+					/* wx.getUserInfo({
+						success: function(user) {
+							
+						}
+					}); */
+				};
+			}
+		});
 	},
 	
+	uploadFile(filePath, name, formData, callback) {
+		var that = this;
+		const c_callback = (res) => {
+			that.uploadFile(filePath, name, formData, callback);
+		};
+		console.log('uploadFile', formData)
+		if (formData.tokenFuncName) {
+			if (formData.refreshTokn) {
+				token[formData.tokenFuncName](c_callback, {
+					refreshToken: true
+				});
+			} else {
+				formData.token = token[formData.tokenFuncName](c_callback);
+			};
+			if (!formData.token) {
+				return;
+			};
+		};
+		wx.uploadFile({
+			url: 'https://jinyuly.com/api/public/index.php/api/v1/Base/FtpFile/upload',
+			filePath: filePath,
+			name: name,
+			formData: formData,
+			success: function(res) {
+				if (res.data) {
+					res.data = JSON.parse(res.data);
+				};
+				if (res.data.solely_code == '200000') {
+					token[formData.tokenFuncName](c_callback, {
+						refreshToken: true
+					});
+				} else {
+					callback && callback(res.data);
+				};
+			},
+			fail: function(err) {
+				wx.showToast({
+					title: '网络故障',
+					icon: 'fail',
+					duration: 2000,
+					mask: true,
+				});
+			}
+		})
+	},
+
 	getHashParameters() {
-		
-		
-		if(location.search){
+
+
+		if (location.search) {
 			var searchArr = location.search.substr(1).split('&');
 		};
-		if(location.hash&&location.hash .split('?')[1]){
-			var hashArr = location.hash .split('?')[1].split('&');
-			var hash = location.hash .split('?')[0]
+		if (location.hash && location.hash.split('?')[1]) {
+			var hashArr = location.hash.split('?')[1].split('&');
+			var hash = location.hash.split('?')[0]
 		};
 		var arr = [];
-		if(searchArr){
+		if (searchArr) {
 			arr = arr.concat(searchArr)
 		};
-		if(hashArr){
+		if (hashArr) {
 			arr = arr.concat(hashArr)
 		};
 		var params = {};
 		for (var i = 0; i < arr.length; i++) {
 			var data = arr[i].split('=')
 			if (data.length === 2) {
-			  params[data[0]] = data[1]
+				params[data[0]] = data[1]
 			};
 		};
-		
-		if(!hash){
+
+		if (!hash) {
 			var hash = location.hash
 		};
 
-		return [params,hash]
-    },
+		return [params, hash]
+	},
 
 	showToast(title, type, duration, func) {
 		uni.showToast({
@@ -101,14 +168,14 @@ export default {
 	},
 
 	inArray(value, array) {
-		
-		return array.indexOf(parseInt(value));
+
+		return array.indexOf(value);
 	},
 
 	finishFunc(funcName) {
 		uni.setStorageSync('canClick', true);
 		var loadArray = uni.getStorageSync('loadAllArray');
-		console.log('loadArray',loadArray)
+		console.log('loadArray', loadArray)
 		if (loadArray && loadArray.length > 0) {
 			var length = loadArray.indexOf(funcName);
 			if (length >= 0) {
@@ -444,7 +511,7 @@ export default {
 		if (wx.getStorageSync(objName)) {
 			var history = wx.getStorageSync(objName);
 			var limitSum = self.getJsonLength(history);
-			
+
 
 			if (history[res[name]]) {
 				history[res[name]] = res;
@@ -476,7 +543,7 @@ export default {
 		const self = this;
 		if (wx.getStorageSync(objName)) {
 			var history = wx.getStorageSync(objName);
-			
+
 			if (history[name]) {
 				history[name][fieldName] = field;
 				wx.setStorageSync(objName, history);
@@ -491,7 +558,7 @@ export default {
 		const self = this;
 		if (wx.getStorageSync(objName)) {
 			var history = wx.getStorageSync(objName);
-			
+
 			if (history[name]) {
 				delete history[name];
 				wx.setStorageSync(objName, history);
@@ -530,33 +597,33 @@ export default {
 		can_choose_sku_item = self.cloneForm(choosed_sku_item);
 		for (var i = 0; i < skuData.length; i++) {
 			if (JSON.stringify(skuData[i].sku_item.sort()) == JSON.stringify(choosed_sku_item.sort())) {
-				choosed_skuData = self.cloneForm(skuData[i]);	
+				choosed_skuData = self.cloneForm(skuData[i]);
 				var finish = true;
 				can_choosed_sku_item = self.cloneForm(skuData[i].sku_item);
-				
+
 			} else {
 				if (choosed_sku_item.length > 0) {
 					var all = true;
-					
+
 					var choosedLength = choosed_sku_item.length;
-					if(choosedLength>1){
+					if (choosedLength > 1) {
 						for (var c_i = 0; c_i < choosedLength; c_i++) {
 							if (skuData[i].sku_item.indexOf(choosed_sku_item[c_i]) == -1) {
 								all = false;
 							};
 						};
 					};
-					
+
 					if (all) {
 						can_choose_sku_item.push.apply(can_choose_sku_item, skuData[i].sku_item);
-						if(!finish){
+						if (!finish) {
 							can_choosed_sku_item = self.cloneForm(skuData[i].sku_item);
-						};	
+						};
 					};
 				} else {
 					can_choose_sku_item.push.apply(can_choose_sku_item, skuData[i].sku_item);
 				};
-				
+
 			};
 		};
 
@@ -667,10 +734,10 @@ export default {
 		var seperator1 = "-";
 		var seperator2 = ":";
 		var date = parseInt(date);
-		
-		
+
+
 		var date = new Date(date);
-		
+
 		var month = date.getMonth() + 1;
 		var strDate = date.getDate();
 		if (month >= 1 && month <= 9) {
@@ -693,8 +760,51 @@ export default {
 		} else if (type == "hms") {
 			//转时分秒
 			var currentdate = date.getHours() + seperator2 + date.getMinutes() + seperator2 + date.getSeconds();
-		}
+		} else if (type == "md") {
+			// 转年月日
+			var currentdate =  month + '月' + strDate + '日';
+		} else if (type == "h") {
+			// 转年月日
+			var currentdate =  date.getHours();
+		} else if (type == "hm") {
+			//转时分秒
+			var currentdate = date.getHours() + seperator2 + date.getMinutes();
+		} 
 		return currentdate;
+	},
+
+	getCurrentDate() {
+		var myDate = new Date();
+		var year = myDate.getFullYear(); //年
+		var month = myDate.getMonth() + 1; //月
+		var day = myDate.getDate(); //日
+		var days = myDate.getDay();
+		switch (days) {
+			case 1:
+				days = '星期一';
+				break;
+			case 2:
+				days = '星期二';
+				break;
+			case 3:
+				days = '星期三';
+				break;
+			case 4:
+				days = '星期四';
+				break;
+			case 5:
+				days = '星期五';
+				break;
+			case 6:
+				days = '星期六';
+				break;
+			case 0:
+				days = '星期日';
+				break;
+		}
+		var str = month + "月" + day + "日  " + days;
+		return str;
 	}
+
 
 }

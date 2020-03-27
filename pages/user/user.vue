@@ -3,12 +3,12 @@
 		
 		<view class="userHead pdlr4 pubBj white">
 			<view class="infor flex pdb20">
-				<view>
-					<image class="photo" src="../../static/images/about-img.png" mode=""></image>
+				<view class="photo" style="width: 120rpx;height: 120rpx;border-radius: 50%;overflow: hidden;">
+					<open-data type="userAvatarUrl"></open-data>
 				</view>
 				<view style="width: 70%;">
-					<view class="fs16 pdb10 ftw">雨果果</view>
-					<view class="fs13">18595682356</view>
+					<!-- <view class="fs16 pdb10 ftw"></view> -->
+					<view class="fs13"><open-data type="userNickName"></open-data></view>
 				</view>
 			</view>
 		</view>
@@ -22,35 +22,35 @@
 				<view class="menu flexRowBetween color6 fs12 pdtb15 center">
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
-							<view class="num">1</view>
+							
 							<image src="../../static/images/about-icon1.png"></image>
 						</view>
 						<view>全部订单</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
-							<view class="num">1</view>
+							<view class="num" v-if="userInfoData.order&&userInfoData.order.noPay&&userInfoData.order.noPay>0">{{userInfoData.order.noPay}}</view>
 							<image src="../../static/images/about-icon2.png"></image>
 						</view>
 						<view>未付款</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
-							<view class="num">1</view>
+							<view class="num" v-if="userInfoData.order&&userInfoData.order.waitPick&&userInfoData.order.waitPick>0">{{userInfoData.order.waitPick}}</view>
 							<image src="../../static/images/about-icon3.png"></image>
 						</view>
 						<view>待提货</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
-							<view class="num">1</view>
+							<view class="num" v-if="userInfoData.order&&userInfoData.order.hasPick&&userInfoData.order.hasPick>0">{{userInfoData.order.hasPick}}</view>
 							<image src="../../static/images/about-icon4.png"></image>
 						</view>
 						<view>已提货</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})" >
 						<view class="icon">
-							<view class="num">1</view>
+							<view class="num" v-if="userInfoData.order&&userInfoData.order.hasRemark&&userInfoData.order.hasRemark>0">{{userInfoData.order.hasRemark}}</view>
 							<image src="../../static/images/about-icon5.png"></image>
 						</view>
 						<view>已评价</view>
@@ -63,8 +63,8 @@
 					<view class="ftw">我的自提点</view>
 					<view class="flexEnd fs12 color9" >切换自提点<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image></view>
 				</view>
-				<view class="pubColor pdt15">门店名称门店名称门店名称</view>
-				<view class="fs13 color6 pdt5">地址：陕西省西安市高新区大都荟A座</view>
+				<view class="pubColor pdt15">{{shopData.name?shopData.name:''}}</view>
+				<view class="fs13 color6 pdt5">地址：{{shopData.address?shopData.address:''}}</view>
 			</view>
 			
 			<view class="boxShaow radius10 whiteBj mgt15 pdlr4">
@@ -81,7 +81,7 @@
 		</view>
 			
 		<!--底部tab键-->
-		<view class="navbar">
+		<!-- <view class="navbar">
 			<view class="navbar_item" @click="Router.redirectTo({route:{path:'/pages/index/index'}})">
 				<view class="nav_img">
 					<image src="../../static/images/nabar1.png" />
@@ -100,7 +100,7 @@
 				</view>
 				<view class="text this-text">我的</view>
 			</view>
-		</view>
+		</view> -->
 		<!--底部tab键 end-->
 		
 	</view>
@@ -113,15 +113,93 @@
 				Router:this.$Router,
 				showView: false,
 				score:'',
-				wx_info:{}
+				wx_info:{},
+				shopData:{},
+				userInfoData:{}
 			}
 		},
 		onLoad() {
 			const self = this;
 			//self.$Utils.loadAll(['getMainData'], self);
 		},
+		
+		onShow() {
+			const self = this;
+			self.getUserInfoData()
+		},
+		
 		methods: {
-
+			
+			getUserInfoData() {
+				const self = this;
+				const postData = {
+					searchItem:{thirdapp_id:2}
+				};
+				postData.tokenFuncName = 'getProjectToken'
+				postData.searchItem.user_no = uni.getStorageSync('user_info').user_no;
+				postData.getAfter = {
+					shop:{
+						tableName:'UserInfo',
+						middleKey:'shop_no',
+						key:'user_no',
+						searchItem:{status:1},
+						condition:'='
+					},
+					order: {
+						tableName: 'Order',
+						searchItem: {
+							status:1,
+							level:1,
+						},
+						middleKey: 'user_no',
+						key: 'user_no',
+						condition: 'in',
+						compute:{
+						  noPay:[
+						    'count',
+						    'count',
+						    {
+						      status:1,level:1,pay_status:0
+						    }
+						  ],
+						  waitPick:[
+						    'count',
+						    'count',
+						    {
+						      status:1,level:1,pay_status:1,transport_status:0
+						    }
+						  ],
+						  hasPick:[
+						    'count',
+						    'count',
+						    {
+						      status:1,level:1,pay_status:1,transport_status:2,isremark:0
+						    }
+						  ],
+						  hasRemark:[
+						    'count',
+						    'count',
+						    {
+						      status:1,level:1,pay_status:1,transport_status:2,isremark:1
+						    }
+						  ]
+						},
+					},
+				};
+				const callback = (res) => {
+					if (res.solely_code == 100000 && res.info.data[0]) {
+						self.userInfoData = res.info.data[0];
+						if(res.info.data[0].shop[0]){
+							self.shopData = res.info.data[0].shop[0]
+						}
+						
+					} else {
+						self.$Utils.showToast(res.msg, 'none')
+					};
+					// self.$Utils.finishFunc('getUserInfoData');
+				};
+				self.$apis.userInfoGet(postData, callback);
+			},
 
 		},
 	};

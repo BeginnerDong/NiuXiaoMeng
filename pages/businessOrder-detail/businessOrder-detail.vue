@@ -2,51 +2,59 @@
 	<view>
 		<view class="mglr4 mgt15">
 			<view class="pdlr4 HeadState flexRowBetween radius10">
-				<view class="flex pubColor fs14"><image style="width: 30rpx; height: 30rpx;margin-right: 10rpx;" src="../../static/images/order-details-icon.png" mode=""></image>待提货</view>
+				<view class="flex pubColor fs14"><image style="width: 30rpx; height: 30rpx;margin-right: 10rpx;" src="../../static/images/order-details-icon.png" mode=""></image>{{mainData.transport_status==0?'待提货':'已提货'}}</view>
+				
 				<view class="flexEnd">
-					<view class="flexEnd">提货单号：<span class="pubColor">8</span></view>
+					<view class="flexEnd">提货单号：<span class="pubColor">{{mainData.code}}</span></view>
 				</view>
 			</view>
 			<view class="whiteBj radius10 pdlr4 mgt15">
 				<view class="pdtb15 fs14 ">
-					<view>收货人：张丹 15623565689</view>
-					<view class="pdtb15 pubColor">自提点：门店名称门店名称</view>
-					<view class="color6">地址：陕西省西安市高新区高新大都会A座</view>
+					<view>收货人：{{mainData.name}} {{mainData.phone}}</view>
+					<view class="pdtb15 pubColor">自提点：{{name}}</view>
+					<view class="color6">地址：{{address}}</view>
 				</view>
 			</view>
 			
 			<view class="proRow mgt15">
-				<view class="item" v-for="(item,index) in mainData" :key="index">
+				<view class="item" v-for="(item,index) in mainData.child" :key="index">
 					<view class="flexRowBetween">
 						<view class="pic">
-							<image src="../../static/images/shopping-img.png" mode=""></image>
+							<image :src="item.orderItem&&item.orderItem[0]&&item.orderItem[0].snap_product
+							&&item.orderItem[0].snap_product.mainImg&&item.orderItem[0].snap_product.mainImg[0]?item.orderItem[0].snap_product.mainImg[0].url:''" mode=""></image>
 						</view>
 						<view class="infor">
-							<view class="avoidOverflow fs14">智利车厘子 约200g/份 正负20g</view>
+							<view class="avoidOverflow fs14">{{item.title}}</view>
 							<view class="B-price flexRowBetween">
-								<view class="price fs16">18.8</view>
-								<view class="fs13">×1</view>
+								<view class="price fs16">{{item.unit_price}}</view>
+								<view class="fs13">×{{item.count}}</view>
 							</view>
 						</view>
 					</view>
-					<view class="flexEnd pdt15 fs13">共1件商品 实付金额:<span class="price fs15 ftw">56</span></view>
-					<view class="underBtn flexEnd">
-						<view class="Bbtn">确认提货</view>
+					<view class="flexEnd pdt15 fs13">共{{item.count}}件商品 实付金额:<span class="price fs15 ftw">{{item.price}}</span></view>
+					<view class="underBtn flexEnd" v-if="item.transport_status==0">
+						<view class="Bbtn" @click="orderUpdate(item.id)">确认提货</view>
+					</view>
+					<view class="underBtn flexEnd" v-if="item.transport_status==2">
+						<view class="Bbtn">已提货</view>
 					</view>
 				</view>
 			</view>	
 		
 			<view class="whiteBj radius10 pdlr4 mgt15">
 				<view class="pdtb15 fs13 color6">
-					<view class="mgb10">订单编号：5522256553326567</view>
-					<view>下单时间：2020-03-05 17:20:40</view>
+					<view class="mgb10">订单编号：{{mainData.order_no}}</view>
+					<view>下单时间：{{mainData.create_time}}</view>
 				</view>
 			</view>
 			
 			<view class="fs13 color6 mgt20">1.如果您购买的商品有任何问题，请直接购买的门店联系！100%收货保障！</view>
 			<view class="fs13 color6 mgt10">2.如果您找不到购物的提货门店，请致电牛小萌庄园帮忙热线！12356235862</view>
-			<view class="flexEnd center" style="margin-top: 100rpx;">
-				<view class="B-btn on mgl15">确认提货</view>
+			<view class="flexEnd center" style="margin-top: 100rpx;" v-if="mainData.transport_status==0">
+				<view class="B-btn on mgl15" @click="orderUpdate(mainData.id)">确认提货</view>
+			</view>
+			<view class="flexEnd center" style="margin-top: 100rpx;" v-if="mainData.transport_status==2">
+				<view class="B-btn on mgl15">已提货</view>
 			</view>
 		</view>
 		
@@ -59,23 +67,83 @@
 		data() {
 			return {
 				Router:this.$Router,
-				showView: false,
-				score:'',
-				wx_info:{},
-				mainData:[{},{}]
-			}
-		},
-		onLoad() {
-			const self = this;
-			//self.$Utils.loadAll(['getMainData'], self);
-		},
-		methods: {
-			popupShow(){
-				const self=this;
-				self.is_popupShow = !self.is_popupShow;
-				self.is_show = !self.is_show;
 				
+				mainData:{},
+				name:'',
+				address:''
 			}
+		},
+		
+		onLoad(options) {
+			const self = this;
+			self.id = options.id;
+			self.name = uni.getStorageSync('merchantInfo').info.name;
+			self.address = uni.getStorageSync('merchantInfo').info.address;
+			self.$Utils.loadAll(['getMainData'], self);
+		},
+		
+		methods: {
+			
+			getMainData() {
+				const self = this;
+				const postData = {};
+				postData.tokenFuncName = 'getMerchantToken';
+				postData.searchItem = {
+					id:self.id,
+					user_type:0
+				};
+				
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.mainData = res.info.data[0];
+					};
+					console.log('self.mainData', self.mainData)
+					self.$Utils.finishFunc('getMainData');
+				};
+				self.$apis.orderGet(postData, callback);
+			},
+			
+			orderUpdate(id) {
+				const self = this;
+				uni.setStorageSync('canClick', false);
+				uni.showModal({
+				    title: '提示',
+				    content: '确定要核销此订单吗',
+					confirmColor:'#FF2121',
+				    success: function (res) {
+				        if (res.confirm) {
+				            const postData = {};
+				            postData.tokenFuncName = 'getMerchantToken';
+				            postData.data = {
+				            	transport_status:2
+				            };
+				            postData.searchItem = {
+				            	id:id,
+				            	user_type:0
+				            };
+				            const callback = (data) => {
+				            	uni.setStorageSync('canClick', true);
+				            	if (data && data.solely_code == 100000) {
+				            		self.$Utils.showToast('操作成功','none');
+				            		
+				            		setTimeout(function() {
+				            			uni.navigateBack({
+				            				delta:1
+				            			})
+				            		}, 1000);
+				            	} else {
+				            		self.$Utils.showToast(data.msg,'none')
+				            	}
+				            };
+				            self.$apis.orderUpdate(postData, callback);
+				        } else if (res.cancel) {
+
+				        }
+				    }
+				});
+				
+			 },
+			
 		}
 	};
 </script>

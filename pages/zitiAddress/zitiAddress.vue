@@ -1,11 +1,11 @@
 <template>
 	<view>
-			<view class="myaddress-lis" v-for="(item,index) in myaddressDate" :key="index">
-				<view class="name">门店名称门店名称门店名称门店名称</view>
-				<view class="adrs">地址：陕西省西安市高新区大都荟</view>
+			<view class="myaddress-lis" v-for="(item,index) in mainData" :key="index">
+				<view class="name" @click="choose(index)">{{item.name}}</view>
+				<view class="adrs" @click="choose(index)">地址：{{item.address}}</view>
 				<view class="seltBox">
-					<view class="L"  @click="seltCurr(index)">
-						<image class="icon" :src="curr == index?'../../static/images/stores-icon.png':'../../static/images/stores-icon1.png'" mode=""></image>
+					<view class="L"  @click="setDefault(index)">
+						<image class="icon" :src="defaultNo == item.user_no?'../../static/images/stores-icon.png':'../../static/images/stores-icon1.png'" mode=""></image>
 						默认地址
 					</view>
 				</view>
@@ -19,32 +19,82 @@
 		data() {
 			return {
 				Router:this.$Router,
-				showView: false,
-				is_show:false,
-				wx_info: {},
-				curr:0,
-				myaddressDate:[{},{},{},{}]
+				
+				mainData:[],
+				defaultNo:''
 			}
 		},
 
-		onLoad(options) {
-			uni.setStorageSync('canClick', true);
+		onLoad() {
+			const self = this;
+			self.paginate = self.$Utils.cloneForm(self.$AssetsConfig.paginate);
+			self.defaultNo = uni.getStorageSync('user_info').info.shop_no;
+			self.$Utils.loadAll(['getMainData'], self);
 		},
 
-		onShow() {
+		
+		
+		onReachBottom() {
+			console.log('onReachBottom')
 			const self = this;
-			document.title = ''
+			if (!self.isLoadAll && uni.getStorageSync('loadAllArray')) {
+				self.paginate.currentPage++;
+				self.getMainData()
+			};
 		},
+		
 
 		methods: {
-			seltCurr(index){
+			
+			setDefault(index) {
 				const self = this;
-				self.curr = index
+				const postData = {};
+				postData.tokenFuncName = 'getProjectToken';
+				postData.searchItem = {
+					user_no:uni.getStorageSync('user_info').user_no
+				};
+				postData.data = {
+					shop_no:self.mainData[index].user_no
+				};
+				const callback = (data) => {				
+					if (data.solely_code == 100000) {					
+						self.defaultNo = self.mainData[index].user_no
+					} else {
+						uni.setStorageSync('canClick', true);
+						self.$Utils.showToast(data.msg, 'none', 1000)
+					}	
+				};
+				self.$apis.userInfoUpdate(postData, callback);
 			},
-			getMainData() {
+			
+			
+			
+			getMainData(isNew) {
 				const self = this;
-				self.$apis.userGet(postData, callback);
-			}
+				if (isNew) {
+					self.mainData = [];
+					self.paginate = {
+						count: 0,
+						currentPage: 1,
+						is_page: true,
+						pagesize: 10
+					}
+				};
+				const postData = {};
+				postData.tokenFuncName = 'getProjectToken';
+				postData.paginate = self.$Utils.cloneForm(self.paginate);
+				postData.searchItem = {
+					user_type:1,
+					thirdapp_id:2
+				};
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.mainData.push.apply(self.mainData,res.info.data)
+					};
+					self.$Utils.finishFunc('getMainData');	
+				};
+				self.$apis.userInfoGet(postData, callback);
+			},
 		}
 	}
 </script>

@@ -10,10 +10,10 @@
 			<view class="center mgb30">支付成功</view>
 			
 			<view class="seltBtn flexRowBetween fs14 color2 center" style="width:85%;margin:0 auto ;">
-				<view class="btn" @click="Router.navigateTo({route:{path:'/pages/index/index'}})">继续购物</view>
-				<view class="btn on" @click="Router.navigateTo({route:{path:'/pages/share-detail/share-detail'}})">提醒老板接单</view>
+				<view class="btn" @click="Router.switchTab({route:{path:'/pages/index/index'}})">继续购物</view>
+				<view class="btn on">提醒老板接单</view>
 			</view>
-			<view class="fs12 mgt20 color6">点击上面的<span class="pubcolor">“提醒老板接单”</span>按钮，将提醒消息发送到本店微信群：<span class="pubcolor">“兴盛优选问309”</span>群，提醒老板及时处理您的订单</view>
+			<view class="fs12 mgt20 color6">点击上面的<span class="pubColor">“提醒老板接单”</span>按钮，将提醒消息发送到本店微信群：<span class="pubColor">“兴盛优选问309”</span>群，提醒老板及时处理您的订单</view>
 			
 			<view class="fs12 color9 mgt25">安全提示：牛小萌庄园不会以任何理由要求您提供银行卡信息或支付额外费用，请谨防钓鱼链接或咋骗电话</view>
 		</view>
