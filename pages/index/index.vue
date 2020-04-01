@@ -30,7 +30,7 @@
 					<view class="center fs13 color6 mgb10">本商品由圣灵商行专供</view>
 					<view class="pic">
 						<image  v-if="item.mainImg&&item.mainImg[0]&&item.mainImg[0].type=='image'" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''" mode=""></image>
-						<video style="height: 340rpx;" auto-pause-if-navigate="true"  v-if="item.mainImg&&item.mainImg[0]&&item.mainImg[0].type=='vedio'" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''"></video>
+						<video style="height: 340rpx;width: 100%;" auto-pause-if-navigate="true"  v-if="item.mainImg&&item.mainImg[0]&&item.mainImg[0].type=='vedio'" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''"></video>
 					</view>
 					<view class="tit borderB1"   :data-id="item.id" @click="Router.navigateTo({route:{path:'/pages/productDetail/productDetail?id='+$event.currentTarget.dataset.id}})">{{item.title}}</view>
 					<view class="data flex"   :data-id="item.id" @click="Router.navigateTo({route:{path:'/pages/productDetail/productDetail?id='+$event.currentTarget.dataset.id}})">
