@@ -71,7 +71,7 @@
 					if (res.info.data.length > 0) {
 						self.mainData = res.info.data[0];
 						self.pay = {
-							score:{
+							wxPay:{
 								price:parseFloat(self.mainData.price).toFixed(2)
 							}
 						}

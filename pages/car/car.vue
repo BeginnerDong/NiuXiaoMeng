@@ -40,7 +40,7 @@
 		</view>
 
 		<view class="xqbotomBar pdlr4" style="border-bottom: 1px solid #eee;">
-			<view class="flex">
+			<view class="flex" @click="chooseAll">
 				<image class="seltIcon mgr10" :src="isChooseAll?'../../static/images/shopping-icon.png':'../../static/images/shopping-icon1.png'" mode=""></image>全选
 			</view>
 			<view class="flexEnd">
@@ -174,6 +174,8 @@
 					for (var i = 0; i < self.mainData.length; i++) {
 						if (self.mainData[i].isSelect) {
 							self.$Utils.delStorageArray('cartData', self.mainData[i], 'id');
+							self.mainData[i].count = 0;
+							self.$Utils.setStorageArray('indexData', self.mainData[i], 'id', 999);
 						}
 					};
 					self.mainData = self.$Utils.getStorageArray('cartData');
@@ -237,6 +239,7 @@
 						self.totalPrice += self.mainData[i].price * self.mainData[i].count;
 					};
 				};
+				self.totalPrice = parseFloat(self.totalPrice).toFixed(2)
 			},
 
 
@@ -252,11 +255,12 @@
 							count: self.mainData[i].count,
 							product: self.mainData[i]
 						}, );
+						if(!self.mainData[i].isStart){
+							self.$Utils.showToast('所选商品未开售', 'none', 1000);
+							return;
+						}
 					};
-					if(!self.mainData[i].isStart){
-						self.$Utils.showToast('所选商品未开售', 'none', 1000);
-						return;
-					}
+					
 				};
 				if (orderList.length == 0) {
 					self.$Utils.showToast('未选择商品', 'none', 1000);

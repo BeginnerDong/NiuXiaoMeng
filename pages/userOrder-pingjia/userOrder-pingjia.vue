@@ -28,14 +28,12 @@
 				<view class="fs13">
 					<textarea v-model="submitData.description" placeholder="商品满足您的期望吗？分享你的使用心得" />
 				</view>
-				<view class="flex">
-					<view class="flex onloadbtn">
-						<image src="../../static/images/evaluation-img0.png" mode=""></image>
-					</view>
-				</view>
-				<view class="flex pjPic">
+				
+				<view class="flex pjPic" style="flex-wrap: wrap;">
 					<image v-for="item in submitData.bannerImg" :src="item.url" mode=""></image>
+					<image @click="upLoadImg('bannerImg')" src="../../static/images/evaluation-img0.png" mode=""></image>
 				</view>
+				
 			</view>
 		</view>
 		
@@ -82,6 +80,49 @@
 		
 		methods: {
 			
+			
+			upLoadImg(type) {
+				const self = this;	
+				if (self.submitData[type].length > 8) {
+					api.showToast('仅限9张', 'fail');
+					return;
+				};
+				wx.showLoading({
+					mask: true,
+					title: '上传中',
+				});
+				const callback = (res) => {
+					console.log('res', res)
+					if (res.solely_code == 100000) {
+						self.submitData[type].push({url:res.info.url,type:'image'})
+						console.log('type',type)
+						console.log(self.submitData)
+						wx.hideLoading()
+					} else {
+						self.$Utils.showToast('网络故障', 'none')
+					}
+				};				
+				wx.chooseImage({
+					count: 9,
+					success: function(res) {
+						console.log(res);
+						var tempFilePaths = res.tempFilePaths;
+						console.log(callback)
+						for (var i = 0; i < tempFilePaths.length; i++) {
+							var file = res.tempFiles[i];
+							var obj = res.tempFiles[i].path.lastIndexOf(".");
+							var ext = res.tempFiles[i].path.substr(obj+1);
+							self.$Utils.uploadFile(tempFilePaths[i], 'file', {
+								tokenFuncName: 'getProjectToken',ext:ext,md5:'md5',totalSize:file.size,start:0,chunkSize:file.size,originName:'img'
+							}, callback)
+						}
+					},
+					fail: function(err) {
+						wx.hideLoading();
+					},			
+				})			
+			},
+			
 			getMainData() {
 				const self = this;
 				const postData = {};
@@ -118,7 +159,9 @@
 				const self = this;
 				uni.setStorageSync('canClick', false);
 				var newObject = self.$Utils.cloneForm(self.submitData);
-				delete newObject.bannerImg
+				delete newObject.bannerImg;
+				delete newObject.mainImg;
+				delete newObject.title;
 				const pass = self.$Utils.checkComplete(newObject);
 				console.log('pass', pass);
 				console.log('self.submitData', self.submitData)

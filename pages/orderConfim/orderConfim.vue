@@ -133,7 +133,7 @@
 				uni.setStorageSync('canClick', false);
 				var orderList = []
 				for (var i = 0; i < self.mainData.length; i++) {
-					orderList.push({product_id:self.mainData[i].product_id,count:self.mainData[i].count,type:1})
+					orderList.push({product_id:self.mainData[i].product_id,count:self.mainData[i].count,type:1,product:self.mainData[i]})
 				}
 				const callback = (user, res) => {
 					self.addOrder(orderList)
@@ -164,6 +164,8 @@
 						self.orderId = res.info.id;
 						for (var i = 0; i < orderList.length; i++) {
 							self.$Utils.delStorageArray('cartData', orderList[i], 'id');
+							orderList[i].product.count = 0;
+							self.$Utils.setStorageArray('indexData', orderList[i].product, 'id', 999);
 						}
 						self.goPay()
 					} else {		

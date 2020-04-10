@@ -29,31 +29,31 @@
 		<view class="pdlr4" style="border-top: 20rpx solid #F5F5F5;">
 			<view class="flexRowBetween pdt15 pdb10">
 				<view class="fs15 ftw">商品评价</view>
-				<view class="fs13 color9 flexEnd"  @click="Router.navigateTo({route:{path:'/pages/pingjia/pingjia'}})">查看更多<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image></view>
+				<view class="fs13 color9 flexEnd"  @click="Router.navigateTo({route:{path:'/pages/pingjia/pingjia?product='+mainData.product_no}})">查看更多<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image></view>
 			</view>
 			<view class="detail_pjLis">
-				<view class="item" v-for="(item,index) in messageData" :key="index">
-					<view class="photo"><image src="../../static/images/details-img2.png" mode=""></image></view>
+				<view class="item" v-for="(item,index) in messageData" :key="index" v-if="messageData.length>0">
+					<view class="photo"><image :src="item.mainImg&&item.mainImg[0]&&item.mainImg[0].url!=''?item.mainImg[0].url:'../../static/images/about-img.png'" mode=""></image></view>
 					<view class="cont">
 						<view class="flexRowBetween pdt5 pdb10">
-							<view class="name font14">哆啦A梦</view>
-							<view class="time fs12 color6">2020.03.04</view>
+							<view class="name font14">{{item.title!=''?item.title:'用户'}}</view>
+							<view class="time fs12 color6">{{item.create_time}}</view>
 						</view>
-						<view class="text">根据瑞灵活赶紧来都搞好了电话沟通各环节的反馈给换了多个黑客帝国</view>
+						<view class="text">{{item.description}}</view>
 						<view class="picLis flex">
-							<view class="pic">
-								<image src="../../static/images/evaluation-img1.png" mode=""></image>
-							</view>
-							<view class="pic">
-								<image src="../../static/images/evaluation-img1.png" mode=""></image>
-							</view>
-							<view class="pic">
-								<image src="../../static/images/evaluation-img1.png" mode=""></image>
+							<view class="pic" v-for="c_item in item.bannerImg">
+								<image :src="c_item.url" mode=""></image>
 							</view>
 						</view>
 					</view>
 				</view>
+				
+				<view class="noDataBox" v-if="messageData.length==0">
+					<image src="../../static/images/nodata.png" mode=""></image>
+				</view>
 			</view>
+			
+			
 		</view>
 		
 		<!-- 底部菜单按钮 -->
@@ -73,7 +73,7 @@
 				</button>
 			</view>
 			<view class="right flexRowBetween white fs13">
-				<view class="item" style="background-color: #ff571c;">加入购物车</view>
+				<view class="item" style="background-color: #ff571c;" @click="addCar">加入购物车</view>
 				<view class="item pubBj" @click="goBuy()">立即下单</view>
 			</view>
 		</view>
@@ -85,11 +85,11 @@
 					<image src="../../static/images/details-icon2.png" mode=""></image>
 					<view>首页</view>
 				</view>
-				<view class="ite">
+				<view class="ite" @click="Router.switchTab({route:{path:'/pages/car/car'}})">
 					<image src="../../static/images/details-icon1.png" mode=""></image>
 					<view>购物车</view>
 				</view>
-				<button class="ite">
+				<button class="ite" open-type="share">
 					<image src="../../static/images/details-icon.png" mode=""></image>
 					<view>分享</view>
 				</button>
@@ -126,7 +126,7 @@
 			return {
 				Router:this.$Router,
 				Utils:this.$Utils,
-				messageData:[{},{},{},{}],
+				messageData:[],
 				mainData:{}
 			}
 		},
@@ -181,6 +181,7 @@
 			
 			addCar(){
 				const self = this;
+				console.log(111)
 				var array = self.$Utils.getStorageArray('cartData');
 				for (var i = 0; i < array.length; i++) {
 					if(array[i].id == self.id){
@@ -191,11 +192,13 @@
 					target.count  = target.count + 1
 				}else{
 					var target = self.mainData;
-					target.count = 0;
-					target.isCar = false;
-					target.isSelect = false;
+					target.count = 1;
+					target.isCar = true;
+					target.isSelect = true;
 				}
+				self.$Utils.showToast('已加入', 'none', 1000);
 				self.$Utils.setStorageArray('cartData', target, 'id', 999);
+				self.$Utils.setStorageArray('indexData', target, 'id', 999);
 			},
 			
 			getMainData() {
@@ -215,6 +218,7 @@
 						}else{
 							self.mainData.isStart = false
 						}
+						self.getMessageData()
 					}
 					console.log('self.mainData', self.mainData)
 					self.$Utils.finishFunc('getMainData');
@@ -233,6 +237,33 @@
 				uni.setStorageSync('payPro', self.orderList);
 				self.Router.navigateTo({route:{path:'/pages/orderConfim/orderConfim'}})
 				uni.setStorageSync('canClick',true);
+			},
+			
+			getMessageData() {
+				const self = this;
+				const postData = {};
+				postData.tokenFuncName = 'getProjectToken';
+				postData.paginate = {
+					count: 0,
+					currentPage: 1,
+					is_page: true,
+					pagesize: 3
+				};
+				postData.searchItem = {
+					thirdapp_id: 2,
+					product_no :self.mainData.product_no,
+					type:1,
+					user_type:0
+				};
+				const callback = (res) => {
+					if (res.info.data.length > 0) {
+						self.messageData.push.apply(self.messageData, res.info.data);
+					}
+					
+					console.log('self.messageData', self.messageData)
+					self.$Utils.finishFunc('getMessageData');
+				};
+				self.$apis.messageGet(postData, callback);
 			},
 		}
 	};
