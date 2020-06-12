@@ -8,7 +8,7 @@
 			</view>
 		</view>
 		
-		<view class="indHome flexRowBetween whiteBj pdt15" style="min-height: 320rpx;">
+		<view class="indHome flex whiteBj pdt15" style="min-height: 320rpx;">
 			<view class="item" v-for="(item,index) in labelData" :data-id="item.id" :key="index" 
 			@click="Router.navigateTo({route:{path:'/pages/productList/productList?id='+$event.currentTarget.dataset.id}})">
 				<image :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''"></image>

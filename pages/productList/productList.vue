@@ -66,7 +66,7 @@
 			self.id = options.id;
 			self.searchItem.category_id = self.id;
 			self.paginate = self.$Utils.cloneForm(self.$AssetsConfig.paginate);
-			//self.$Utils.loadAll(['getMainData'], self);
+			self.$Utils.loadAll(['getMainData'], self);
 		},
 		
 		
@@ -74,7 +74,7 @@
 		onShow() {
 			const self = this;
 			
-			self.getMainData()
+			//self.getMainData(true)
 			
 			
 			console.log('self.mainData',self.mainData)
