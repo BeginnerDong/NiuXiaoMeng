@@ -23,6 +23,26 @@
 			</view>
 		</button>
 		
+		<button>
+			<view class="RFixIcon" style="bottom: 40%;">
+				<image src="../../static/images/share-icon1.png" mode=""></image>
+			</view>
+		</button>
+		
+		<view class="radius10 whiteBj mgt10 pdlr4 pdb15 mglr4">
+			<view class="flexRowBetween pdt15 pdb10 borderB1" @click="Router.navigateTo({route:{path:'/pages/zitiAddress/zitiAddress'}})">
+				<view class="ftw">店铺自提点</view>
+				<view class="flexEnd fs12 color9" >更换自提点<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image></view>
+			</view>
+			<view class="flex pdt10">
+				<image src="../../static/images/shopping-img.png" class="mdImg"></image>
+				<view class="flex-1">
+					<view class="pubColor pdb10">门店名称门店名称</view>
+					<view class="fs13 color6 pdt5">地址：陕西省西安市雁塔区高新区大都荟</view>
+				</view>
+			</view>
+		</view>
+		
 		
 		<view class="mglr4 proList">
 			<view class="item" v-for="(item,index) in mainData" :key="index">

@@ -155,4 +155,5 @@ image{display: block;}
 .flexRowBetween{display:flex;flex-direction:row;justify-content:space-between;align-items:center;}
 .flexEnd{ display: flex; justify-content: flex-end; align-items: center;}
 .flexColumn{display: flex; flex-direction: column; align-items: center;}
+.flex-1{flex: 1;}
 

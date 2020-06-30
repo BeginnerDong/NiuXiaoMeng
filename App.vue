@@ -24,5 +24,5 @@
 	uni-swiper .uni-swiper-dot{width: 22rpx;height: 12rpx;border-radius: 6rpx;background-color: #c5c5c5;}
 	
 	.ql-editor img{max-width: 100%;margin: 0 auto;}
-	
+	.mdImg{width: 120rpx;height: 120rpx;border-radius: 10rpx;margin-right: 20rpx;}
 </style>
