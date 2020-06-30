@@ -12,7 +12,7 @@
 			<view class="item" v-for="(item,index) in labelData" :data-id="item.id" :key="index" 
 			@click="Router.navigateTo({route:{path:'/pages/productList/productList?id='+$event.currentTarget.dataset.id}})">
 				<image :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''"></image>
-				<view class="tit">{{item.title}}</view>
+				<view class="tit avoidOverflow">{{item.title}}</view>
 			</view>
 		</view>
 		<view class="f5H10" @click="flowLogAdd"></view>
@@ -27,7 +27,7 @@
 		<view class="mglr4 proList">
 			<view class="item" v-for="(item,index) in mainData" :key="index">
 				<view>
-					<view class="center fs13 color6 mgb10">本商品由圣灵商行专供</view>
+					<!-- <view class="center fs13 color6 mgb10">本商品由圣灵商行专供</view> -->
 					<view class="pic">
 						<image  v-if="item.mainImg&&item.mainImg[0]&&item.mainImg[0].type=='image'" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''" mode=""></image>
 						<video style="height: 340rpx;width: 100%;" auto-pause-if-navigate="true"  v-if="item.mainImg&&item.mainImg[0]&&item.mainImg[0].type=='vedio'" :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''"></video>
