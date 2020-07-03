@@ -18,13 +18,13 @@
 		<view class="f5H10" @click="flowLogAdd"></view>
 		
 		<button open-type="contact">
-			<view class="RFixIcon" style="bottom: 50%;">
+			<view class="RFixIcon" style="bottom: 20%;">
 				<image src="../../static/images/home-icon9.png" mode=""></image>
 			</view>
 		</button>
 		
-		<button>
-			<view class="RFixIcon" style="bottom: 40%;">
+		<button open-type="share">
+			<view class="RFixIcon" style="bottom: 10%;">
 				<image src="../../static/images/share-icon1.png" mode=""></image>
 			</view>
 		</button>
@@ -35,10 +35,10 @@
 				<view class="flexEnd fs12 color9" >更换自提点<image class="arrowR" src="../../static/images/about-icon.png" mode=""></image></view>
 			</view>
 			<view class="flex pdt10">
-				<image src="../../static/images/shopping-img.png" class="mdImg"></image>
+				<image :src="shopData.mainImg&&shopData.mainImg[0]?shopData.mainImg[0].url:''" class="mdImg"></image>
 				<view class="flex-1">
-					<view class="pubColor pdb10">门店名称门店名称</view>
-					<view class="fs13 color6 pdt5">地址：陕西省西安市雁塔区高新区大都荟</view>
+					<view class="pubColor pdb10">{{shopData.name?shopData.name:''}}</view>
+					<view class="fs13 color6 pdt5">地址：{{shopData.address?shopData.address:''}}</view>
 				</view>
 			</view>
 		</view>
@@ -120,10 +120,12 @@
 				labelData: [],
 				searchItem: {
 					thirdapp_id: 2,
-					on_shelf:1
+					on_shelf:1,
+					
 				},
 				mainData: [],
-				allCount:0
+				allCount:0,
+				shopData:{}
 			}
 		},
 		
@@ -148,7 +150,7 @@
 			}else{
 				self.getMainData()
 			}
-			
+			self.getUserInfoData()
 			console.log('self.mainData',self.mainData)
 		},
 		
@@ -161,9 +163,104 @@
 			};
 		},
 		
-
+		onShareAppMessage(ops) {
+			console.log(ops)
+			const self = this;
+			if (ops.from === 'button') {
+				
+				return {
+					title:'牛小萌庄园',
+					path: '/pages/index/index', //点击分享的图片进到哪一个页面
+					//imageUrl:self.mainData&&self.mainData.mainImg&&self.mainData.mainImg[0]&&self.mainData.mainImg[0].url?self.mainData.mainImg[0].url:'',
+					success: function(res) {
+						// 转发成功
+						
+						console.log("转发成功:" + JSON.stringify(res));
+					},
+					fail: function(res) {
+						// 转发失败
+						console.log("转发失败:" + JSON.stringify(res));
+					}
+				}
+			}else{
+				return {
+					title:'牛小萌庄园',
+					path: '/pages/index/index', //点击分享的图片进到哪一个页面
+					//imageUrl:self.mainData&&self.mainData.mainImg&&self.mainData.mainImg[0]&&self.mainData.mainImg[0].url?self.mainData.mainImg[0].url:'',
+					success: function(res) {
+						// 转发成功
+						
+						console.log("转发成功:" + JSON.stringify(res));
+					},
+					fail: function(res) {
+						// 转发失败
+						console.log("转发失败:" + JSON.stringify(res));
+					}
+				}
+			}
+		},
 		
 		methods: {
+			
+			getUserInfoData() {
+				const self = this;
+				const postData = {
+					searchItem:{thirdapp_id:2}
+				};
+				postData.tokenFuncName = 'getProjectToken'
+				postData.searchItem.user_no = uni.getStorageSync('user_info').user_no;
+				postData.getAfter = {
+					shop:{
+						tableName:'UserInfo',
+						middleKey:'shop_no',
+						key:'user_no',
+						searchItem:{status:1},
+						condition:'='
+					},
+				};
+				const callback = (res) => {
+					if (res.solely_code == 100000 && res.info.data[0]) {
+						self.userInfoData = res.info.data[0];
+						if(res.info.data[0].shop[0]){
+							self.shopData = res.info.data[0].shop[0]
+						}else{
+							self.getLocation()
+						}
+					} else {
+						self.$Utils.showToast(res.msg, 'none')
+					};
+					// self.$Utils.finishFunc('getUserInfoData');
+				};
+				self.$apis.userInfoGet(postData, callback);
+			},
+			
+			getLocation(){
+				const self = this;
+				uni.getLocation({
+				    type: 'wgs84',
+				    success: function (res) {
+						self.getNearShop(res.latitude,res.longitude)
+				        console.log('当前位置的经度：' + res.longitude);
+				        console.log('当前位置的纬度：' + res.latitude);
+				    }
+				});
+			},
+			
+			getNearShop(latitude,longitude) {
+				const self = this;
+				self.nearShopData = [];
+				const postData = {
+					tokenFuncName:'getProjectToken',
+					longitude:longitude,
+					latitude:latitude,
+				};
+				const callback = (res) => {
+					if (res.info.length > 0) {
+						self.shopData = res.info[0]
+					}
+				};
+				self.$apis.getShop(postData, callback);
+			},
 			
 			flowLogAdd() {
 				const self = this;

@@ -1,5 +1,5 @@
 {
-    "name" : "uni-one",
+    "name" : "牛小萌庄园",
     "appid" : "",
     "description" : "",
     "versionName" : "1.0.0",
@@ -63,7 +63,11 @@
             "minified" : true
         },
         "usingComponents" : false,
-        "permission" : {}
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "获取您的位置"
+            }
+        }
     },
     "h5" : {
         "title" : "牛小萌庄园",

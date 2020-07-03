@@ -23,35 +23,35 @@
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
 							
-							<image src="../../static/images/about-icon1.png"></image>
+							<image src="../../static/images/icon.png"></image>
 						</view>
 						<view>全部订单</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
 							<view class="num" v-if="userInfoData.order&&userInfoData.order.noPay&&userInfoData.order.noPay>0">{{userInfoData.order.noPay}}</view>
-							<image src="../../static/images/about-icon2.png"></image>
+							<image src="../../static/images/icon1.png"></image>
 						</view>
 						<view>未付款</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
 							<view class="num" v-if="userInfoData.order&&userInfoData.order.waitPick&&userInfoData.order.waitPick>0">{{userInfoData.order.waitPick}}</view>
-							<image src="../../static/images/about-icon3.png"></image>
+							<image src="../../static/images/icon2.png"></image>
 						</view>
 						<view>待提货</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})">
 						<view class="icon">
 							<view class="num" v-if="userInfoData.order&&userInfoData.order.hasPick&&userInfoData.order.hasPick>0">{{userInfoData.order.hasPick}}</view>
-							<image src="../../static/images/about-icon4.png"></image>
+							<image src="../../static/images/icon3.png"></image>
 						</view>
 						<view>已提货</view>
 					</view>
 					<view class="item" @click="Router.navigateTo({route:{path:'/pages/userOrder/userOrder'}})" >
 						<view class="icon">
 							<view class="num" v-if="userInfoData.order&&userInfoData.order.hasRemark&&userInfoData.order.hasRemark>0">{{userInfoData.order.hasRemark}}</view>
-							<image src="../../static/images/about-icon5.png"></image>
+							<image src="../../static/images/icon4.png"></image>
 						</view>
 						<view>已评价</view>
 					</view>
@@ -75,7 +75,7 @@
 			</view>
 			
 			<view class="mgt20 color9 fs12">1.如果您购买的商品有任何问题，请直接与购买的门店联系！100%售后保障！</view>
-			<view class="mgt10 color9 fs12">2.如果您购买的商品有任何问题，请直接与购买的门店联系！100%售后保障！</view>
+			
 			
 			
 		</view>
@@ -129,7 +129,7 @@
 		},
 		
 		methods: {
-			
+				
 			getUserInfoData() {
 				const self = this;
 				const postData = {
@@ -191,14 +191,43 @@
 						self.userInfoData = res.info.data[0];
 						if(res.info.data[0].shop[0]){
 							self.shopData = res.info.data[0].shop[0]
+						}else{
+							self.getLocation()
 						}
-						
 					} else {
 						self.$Utils.showToast(res.msg, 'none')
 					};
 					// self.$Utils.finishFunc('getUserInfoData');
 				};
 				self.$apis.userInfoGet(postData, callback);
+			},
+			
+			getLocation(){
+				const self = this;
+				uni.getLocation({
+				    type: 'wgs84',
+				    success: function (res) {
+						self.getNearShop(res.latitude,res.longitude)
+				        console.log('当前位置的经度：' + res.longitude);
+				        console.log('当前位置的纬度：' + res.latitude);
+				    }
+				});
+			},
+			
+			getNearShop(latitude,longitude) {
+				const self = this;
+				self.nearShopData = [];
+				const postData = {
+					tokenFuncName:'getProjectToken',
+					longitude:longitude,
+					latitude:latitude,
+				};
+				const callback = (res) => {
+					if (res.info.length > 0) {
+						self.shopData = res.info[0]
+					}
+				};
+				self.$apis.getShop(postData, callback);
 			},
 
 		},

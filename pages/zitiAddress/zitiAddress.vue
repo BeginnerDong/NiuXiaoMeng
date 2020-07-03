@@ -2,7 +2,7 @@
 	<view>
 			<view class="myaddress-lis" v-for="(item,index) in mainData" :key="index">
 				<view class="flex addBox">
-					<image src="../../static/images/shopping-img.png" class="mdImg"></image>
+					<image :src="item.mainImg&&item.mainImg[0]?item.mainImg[0].url:''" class="mdImg"></image>
 					<view class="flex-1 inforBox">
 						<view class="name" @click="choose(index)">{{item.name}}</view>
 						<view class="adrs" @click="choose(index)">地址：{{item.address}}</view>
@@ -35,19 +35,19 @@
 			const self = this;
 			self.paginate = self.$Utils.cloneForm(self.$AssetsConfig.paginate);
 			self.defaultNo = uni.getStorageSync('user_info').info.shop_no;
-			self.$Utils.loadAll(['getMainData'], self);
+			self.$Utils.loadAll(['getLocation'], self);
 		},
 
 		
 		
-		onReachBottom() {
+		/* onReachBottom() {
 			console.log('onReachBottom')
 			const self = this;
 			if (!self.isLoadAll && uni.getStorageSync('loadAllArray')) {
 				self.paginate.currentPage++;
 				self.getMainData()
 			};
-		},
+		}, */
 		
 
 		methods: {
@@ -73,34 +73,36 @@
 				self.$apis.userInfoUpdate(postData, callback);
 			},
 			
-			
-			
-			getMainData(isNew) {
+			getLocation(){
 				const self = this;
-				if (isNew) {
-					self.mainData = [];
-					self.paginate = {
-						count: 0,
-						currentPage: 1,
-						is_page: true,
-						pagesize: 10
-					}
-				};
-				const postData = {};
-				postData.tokenFuncName = 'getProjectToken';
-				postData.paginate = self.$Utils.cloneForm(self.paginate);
-				postData.searchItem = {
-					user_type:1,
-					thirdapp_id:2
+				uni.getLocation({
+				    type: 'wgs84',
+				    success: function (res) {
+						self.getMainData(res.latitude,res.longitude)
+				        console.log('当前位置的经度：' + res.longitude);
+				        console.log('当前位置的纬度：' + res.latitude);
+				    }
+				});
+			},
+			
+			getMainData(latitude,longitude) {
+				const self = this;
+				self.nearShopData = [];
+				const postData = {
+					tokenFuncName:'getProjectToken',
+					longitude:longitude,
+					latitude:latitude,
 				};
 				const callback = (res) => {
-					if (res.info.data.length > 0) {
-						self.mainData.push.apply(self.mainData,res.info.data)
-					};
-					self.$Utils.finishFunc('getMainData');	
+					if (res.info.length > 0) {
+						self.mainData.push.apply(self.mainData,res.info)
+					}
+					self.$Utils.finishFunc('getLocation');
 				};
-				self.$apis.userInfoGet(postData, callback);
+				self.$apis.getShop(postData, callback);
 			},
+			
+		
 		}
 	}
 </script>

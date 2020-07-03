@@ -208,6 +208,8 @@
 						self.userInfoData = res.info.data[0];
 						if(res.info.data[0].shop[0]){
 							self.addressData = res.info.data[0].shop[0]
+						}else{
+							self.getLocation()
 						}
 						
 					} else {
@@ -216,6 +218,35 @@
 					// self.$Utils.finishFunc('getUserInfoData');
 				};
 				self.$apis.userInfoGet(postData, callback);
+			},
+			
+			
+			getLocation(){
+				const self = this;
+				uni.getLocation({
+				    type: 'wgs84',
+				    success: function (res) {
+						self.getNearShop(res.latitude,res.longitude)
+				        console.log('当前位置的经度：' + res.longitude);
+				        console.log('当前位置的纬度：' + res.latitude);
+				    }
+				});
+			},
+			
+			getNearShop(latitude,longitude) {
+				const self = this;
+				self.nearShopData = [];
+				const postData = {
+					tokenFuncName:'getProjectToken',
+					longitude:longitude,
+					latitude:latitude,
+				};
+				const callback = (res) => {
+					if (res.info.length > 0) {
+						self.addressData = res.info[0]
+					}
+				};
+				self.$apis.getShop(postData, callback);
 			},
 			
 			PayShow(){

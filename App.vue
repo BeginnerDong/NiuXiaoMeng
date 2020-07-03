@@ -1,6 +1,7 @@
 
 <script>
 	import token from "./common/token.js"
+	//import api from "./common/token.js"
 	export default {
 		onLaunch: function() {	
 		},

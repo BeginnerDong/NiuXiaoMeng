@@ -32,7 +32,21 @@ export default {
 		};
 		http.HTTP(allParams);
 	},
-
+	
+	
+	getShop(param, callback) {
+	
+		var allParams = {
+			url: 'Project/Solely/getShop',
+			type: 'post',
+			data: param,
+			sCallback: function(data) {
+				callback && callback(data);
+			}
+		};
+		http.HTTP(allParams);
+	},
+	
 	registerSuper(param, callback) {
 
 		var allParams = {
